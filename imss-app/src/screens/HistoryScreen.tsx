@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Switch, useWindowDimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../navigation/AppNavigator';
 import { CustomInput } from '../components/CustomInput';
@@ -11,8 +12,11 @@ type Props = {
 };
 
 export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
   const [search, setSearch] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
 
   const activePatient = selectedPatientId ? MOCK_PATIENTS[selectedPatientId] : null;
 
@@ -35,10 +39,10 @@ export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
         <Text className="text-3xl font-extrabold text-imss-dark-wine">Historial</Text>
       </View>
       
-      <ScrollView contentContainerStyle={{ padding: 24, flexDirection: 'row' }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ padding: 24, flexDirection: isMobile ? 'column' : 'row' }} keyboardShouldPersistTaps="handled">
         
         {/* LEFT COLUMN: Search & History */}
-        <View className="flex-1 mr-4">
+        <View className={`flex-1 ${isMobile ? 'mb-6' : 'mr-4'}`}>
           {/* Search Box */}
           <View className="mb-6 relative z-30">
             <View className="bg-imss-green rounded-full px-4 py-1 self-start mb-2">
@@ -49,6 +53,7 @@ export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
               onChangeText={(text) => {
                 setSearch(text);
                 setSelectedPatientId(null);
+                setSelectedAlertId(null);
               }}
               placeholder="Ej: 1111111111"
               keyboardType="number-pad"
@@ -63,6 +68,7 @@ export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
                       onPress={() => {
                         setSearch(nssKey);
                         setSelectedPatientId(nssKey);
+                        setSelectedAlertId(null);
                       }}
                     >
                       <Text className="text-gray-800 font-bold">{nssKey}</Text>
@@ -103,7 +109,7 @@ export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         {/* RIGHT COLUMN: Info & Alerts */}
-        <View className="flex-1 ml-4 bg-gray-200 rounded-2xl p-4 border border-gray-300">
+        <View className={`flex-1 bg-gray-200 rounded-2xl p-4 border border-gray-300 ${isMobile ? '' : 'ml-4'}`}>
           
           {/* Info Paciente */}
           <View className="bg-imss-green rounded-full px-4 py-1 self-start mb-4">
@@ -139,10 +145,14 @@ export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
           <View className="bg-gray-300 flex-1 rounded-lg p-3 mb-6 flex-row flex-wrap">
             {activePatient && activePatient.alerts && activePatient.alerts.length > 0 ? (
               activePatient.alerts.map((alert: any) => (
-                <View key={alert.id} className="bg-imss-cream p-3 rounded-lg border-2 border-gray-500 w-full mb-2">
-                  <Text className="font-bold text-white mb-1">{alert.title}</Text>
-                  <Text className="text-xs text-white">{alert.description}</Text>
-                </View>
+                <TouchableOpacity 
+                  key={alert.id} 
+                  onPress={() => setSelectedAlertId(selectedAlertId === alert.id ? null : alert.id)}
+                  className={`p-3 rounded-lg w-full mb-2 border-2 ${selectedAlertId === alert.id ? 'bg-imss-wine border-imss-dark-wine' : 'bg-white border-gray-400'}`}
+                >
+                  <Text className={`font-bold mb-1 ${selectedAlertId === alert.id ? 'text-white' : 'text-gray-800'}`}>{alert.title}</Text>
+                  <Text className={`text-xs ${selectedAlertId === alert.id ? 'text-gray-200' : 'text-gray-600'}`}>{alert.description}</Text>
+                </TouchableOpacity>
               ))
             ) : (
               <Text className="text-gray-500 mt-4 w-full text-center">
@@ -157,7 +167,7 @@ export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
               title="Mandar Alertas" 
               onPress={() => alert('Alertas enviadas exitosamente al paciente.')}
               className="w-48 mb-3"
-              disabled={!activePatient || !activePatient.alerts || activePatient.alerts.length === 0}
+              disabled={!activePatient || !selectedAlertId}
             />
             <CustomButton 
               title="Cancelar" 

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Modal, TouchableOpacity, Image } from 'react-native';
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Modal, TouchableOpacity, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../navigation/AppNavigator';
 import { useAppStore } from '../store/useAppStore';
@@ -16,6 +17,8 @@ export const RapidRegistrationScreen: React.FC<Props> = ({ navigation }) => {
   const [nss, setNss] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isScanSuccessVisible, setIsScanSuccessVisible] = useState(false);
+  const [hasScannedQr, setHasScannedQr] = useState(false);
+  const [isExitWarningVisible, setIsExitWarningVisible] = useState(false);
 
   const sessionData = useAppStore((state) => state.sessionData);
 
@@ -38,13 +41,31 @@ export const RapidRegistrationScreen: React.FC<Props> = ({ navigation }) => {
   const shouldRenderDropdown = !isNssExact && (nss.length === 0 || filteredNssList.length > 0);
 
   const handleConfirm = () => {
-    // Save vaccine to DB mock
+    if (matchedPatient) {
+      const today = new Date();
+      const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      const dateStr = `${String(today.getDate()).padStart(2, '0')} ${months[today.getMonth()]} ${today.getFullYear()}`;
+      
+      const newHistoryItem = {
+        id: `h_${nss}_new_${Date.now()}`,
+        type: 'vaccine',
+        title: sessionData?.vaccine || 'Vacuna',
+        desc: `Lote: ${sessionData?.lot || 'N/A'}, Unidad: ${sessionData?.location || 'N/A'}`,
+        date: dateStr
+      };
+
+      if (!matchedPatient.history) {
+        matchedPatient.history = [];
+      }
+      matchedPatient.history.unshift(newHistoryItem);
+    }
     setIsModalVisible(true);
   };
 
   const handleNextPatient = () => {
     setIsModalVisible(false);
     setNss('');
+    setHasScannedQr(false);
   };
 
   return (
@@ -65,16 +86,16 @@ export const RapidRegistrationScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Escanear QR Button */}
           <TouchableOpacity 
-            className="bg-imss-cream p-4 rounded-xl shadow-sm mb-6 flex-row items-center justify-center border-2 border-imss-green"
+            className="bg-imss-cream p-6 rounded-3xl shadow-md mb-8 flex-row items-center justify-center border-4 border-imss-green"
             activeOpacity={0.8}
             onPress={() => setIsScanSuccessVisible(true)}
           >
             <Image 
               source={require('../../assets/imss-digital.png')} 
-              style={{ width: 40, height: 40, marginRight: 12 }} 
+              style={{ width: 60, height: 60, marginRight: 16 }} 
               resizeMode="contain" 
             />
-            <Text className="text-imss-dark-wine font-extrabold text-lg">Escanear QR IMSS Digital</Text>
+            <Text className="text-imss-dark-wine font-black text-2xl">ESCANEAR QR</Text>
           </TouchableOpacity>
 
           {/* Buscador NSS */}
@@ -142,14 +163,14 @@ export const RapidRegistrationScreen: React.FC<Props> = ({ navigation }) => {
           <View className="flex-row justify-between mt-6 relative z-10">
             <CustomButton
               title="Terminar Captura"
-              onPress={() => navigation.navigate('Landing')}
+              onPress={() => setIsExitWarningVisible(true)}
               className="w-[48%] bg-imss-wine"
             />
             <CustomButton
               title="Confirmar"
               onPress={handleConfirm}
               className="w-[48%]"
-              disabled={!isPatientFound}
+              disabled={!isPatientFound || !hasScannedQr}
             />
           </View>
         </ScrollView>
@@ -190,10 +211,41 @@ export const RapidRegistrationScreen: React.FC<Props> = ({ navigation }) => {
               title="Continuar"
               onPress={() => {
                 setIsScanSuccessVisible(false);
+                setHasScannedQr(true);
                 setNss('2222222222'); // Auto-fill with a mock patient
               }}
               className="w-full bg-imss-green"
             />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Exit Warning Modal */}
+      <Modal visible={isExitWarningVisible} transparent animationType="fade">
+        <View className="flex-1 bg-black/60 justify-center items-center px-4">
+          <View className="bg-white rounded-3xl p-6 w-full items-center shadow-lg">
+            <View className="w-16 h-16 bg-imss-wine rounded-full justify-center items-center mb-4">
+              <Text className="text-white text-3xl font-bold">!</Text>
+            </View>
+            <Text className="text-2xl font-extrabold text-imss-dark-wine mb-2 text-center">¿Terminar Captura?</Text>
+            <Text className="text-gray-600 text-center mb-6">
+              Estás a punto de cerrar la sesión activa de captura de vacunas. Tendrás que volver a ingresar la UMF, Vacuna y Lote para registrar más pacientes.
+            </Text>
+            <View className="w-full flex-row justify-between">
+              <CustomButton
+                title="Cancelar"
+                onPress={() => setIsExitWarningVisible(false)}
+                className="w-[48%] bg-gray-500"
+              />
+              <CustomButton
+                title="Salir"
+                onPress={() => {
+                  setIsExitWarningVisible(false);
+                  navigation.navigate('Landing');
+                }}
+                className="w-[48%] bg-imss-wine"
+              />
+            </View>
           </View>
         </View>
       </Modal>

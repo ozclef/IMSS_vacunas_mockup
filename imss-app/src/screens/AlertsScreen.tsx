@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Modal, useWindowDimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../navigation/AppNavigator';
 import { CustomButton } from '../components/CustomButton';
@@ -17,7 +18,10 @@ const GLOBAL_ALERTS = [
 ];
 
 export const AlertsScreen: React.FC<Props> = ({ navigation }) => {
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
+  const [detailsVisible, setDetailsVisible] = useState(false);
 
   const activeAlert = GLOBAL_ALERTS.find(a => a.id === selectedAlertId);
 
@@ -27,10 +31,10 @@ export const AlertsScreen: React.FC<Props> = ({ navigation }) => {
         <Text className="text-3xl font-extrabold text-white flex-1 text-center">Alertas Generales</Text>
       </View>
       
-      <ScrollView contentContainerStyle={{ padding: 24, flexDirection: 'row' }}>
+      <ScrollView contentContainerStyle={{ padding: 24, flexDirection: isMobile ? 'column' : 'row' }}>
         
         {/* LEFT COLUMN: Table */}
-        <View className="flex-[3] mr-4">
+        <View className={`flex-[3] ${isMobile ? 'mb-6' : 'mr-4'}`}>
           <View className="border border-gray-400 rounded overflow-hidden">
             <View className="flex-row bg-imss-wine p-3 border-b border-gray-400">
               <Text className="flex-[2] text-white font-bold text-center">Alerta</Text>
@@ -42,7 +46,10 @@ export const AlertsScreen: React.FC<Props> = ({ navigation }) => {
             {GLOBAL_ALERTS.map((alert, index) => (
               <TouchableOpacity 
                 key={alert.id}
-                onPress={() => setSelectedAlertId(alert.id)}
+                onPress={() => {
+                  setSelectedAlertId(alert.id);
+                  setDetailsVisible(false); // Hide details when switching alerts
+                }}
                 className={`flex-row p-3 border-b border-gray-300 ${selectedAlertId === alert.id ? 'bg-imss-cream/50' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-100')}`}
               >
                 <Text className={`flex-[2] text-center font-bold ${selectedAlertId === alert.id ? 'text-imss-dark-wine' : 'text-gray-700'}`}>{alert.title}</Text>
@@ -57,15 +64,16 @@ export const AlertsScreen: React.FC<Props> = ({ navigation }) => {
             <CustomButton 
               title="Ver detalles" 
               className="w-64 bg-imss-green" 
-              onPress={() => {}} // Could scroll to right panel or open modal on small screens
+              onPress={() => setDetailsVisible(true)}
+              disabled={!selectedAlertId}
             />
           </View>
         </View>
 
         {/* RIGHT COLUMN: Detail Panel */}
-        <View className="flex-[2] ml-4 bg-gray-200 rounded-2xl p-6 border border-gray-300 shadow-sm">
+        <View className={`flex-[2] bg-gray-200 rounded-2xl p-6 border border-gray-300 shadow-sm ${isMobile ? '' : 'ml-4'}`}>
           
-          {activeAlert && activeAlert.details ? (
+          {activeAlert && activeAlert.details && detailsVisible ? (
             <>
               <View className="border-2 border-gray-500 rounded-lg p-4 mb-6 bg-gray-300">
                 <Text className="text-gray-100 font-bold text-lg leading-6 text-justify" style={{ color: '#FDFEFE', textShadowColor: 'rgba(0, 0, 0, 0.3)', textShadowOffset: {width: 1, height: 1}, textShadowRadius: 2 }}>
@@ -84,8 +92,8 @@ export const AlertsScreen: React.FC<Props> = ({ navigation }) => {
                     className="w-full bg-imss-green mb-3"
                   />
                   <CustomButton 
-                    title="Cancelar" 
-                    onPress={() => setSelectedAlertId(null)}
+                    title="Ocultar Detalles" 
+                    onPress={() => setDetailsVisible(false)}
                     className="w-full bg-imss-wine"
                   />
                 </View>
@@ -105,7 +113,11 @@ export const AlertsScreen: React.FC<Props> = ({ navigation }) => {
             </>
           ) : (
             <View className="flex-1 justify-center items-center">
-              <Text className="text-gray-500 text-lg text-center font-bold">Seleccione una alerta para ver los detalles y programar el envío masivo.</Text>
+              <Text className="text-gray-500 text-lg text-center font-bold">
+                {selectedAlertId 
+                  ? 'Haga clic en "Ver detalles" para visualizar el contenido y programar el envío masivo.' 
+                  : 'Seleccione una alerta para comenzar.'}
+              </Text>
             </View>
           )}
 
