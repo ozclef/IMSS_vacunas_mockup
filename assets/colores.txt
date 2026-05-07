@@ -1,0 +1,5 @@
+verde:          rgb(0, 100, 85)     | #006455 // green
+verde claro:    rgb(42, 168, 154)   | #2AA89A // light green
+rojo:           rgb(97, 18, 50)     | #611232 // wine
+rojo obscuro:   rgb(97, 18, 50)     | #3A0B1F // dark wine
+crema:          rgb(97, 18, 50)     | #B38E5D // cream
