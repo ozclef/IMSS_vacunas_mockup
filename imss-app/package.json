@@ -2,7 +2,10 @@
   "name": "imss-app",
   "version": "1.0.0",
   "main": "index.ts",
+  "homepage": "https://RODRIGOZACATENCO.github.io/IMSS_vacunas_mockup",
   "scripts": {
+    "predeploy": "npx expo export --platform web",
+    "deploy": "gh-pages -d dist",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
