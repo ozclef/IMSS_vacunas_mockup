@@ -76,6 +76,8 @@ Proyecto con fines educativos / mockup, **no es un sistema oficial del IMSS**.
 
 ## Estructura del repo
 
+
+```
 IMSS_vacunas_mockup/
 ├── assets/              # Logos, iconos e imágenes
 ├── design/              # Mockups en PNG (landing, registro, historial, alertas)
@@ -95,6 +97,8 @@ IMSS_vacunas_mockup/
 │   ├── src/data/
 │   └── src/navigation/
 └── Fase3_Rol1_MVP_y_Flujo.pdf
+
+```
 
 ## Cómo ver los diagramas
 
