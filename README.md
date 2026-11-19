@@ -111,3 +111,10 @@ Empieza por `00_indice.html`.
 cd imss-app
 npm install
 npx expo start
+```
+
+
+
+
+
+<img width="1479" height="2691" alt="image" src="https://github.com/user-attachments/assets/9e5d2ccb-3dd1-4863-82a3-dfd1785e33b1" />
