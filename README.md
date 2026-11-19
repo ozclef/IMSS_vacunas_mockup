@@ -53,3 +53,57 @@ To create a production build for Android (.apk or .aab) or iOS, use Expo Applica
 npx eas-cli build --platform all
 ```
 *(Note: An Expo account and initial EAS configuration are required for cloud building).*
+
+
+
+
+----
+
+
+
+
+# IMSS Vacunas — Mockup
+
+Sistema simulado para el registro, consulta e historial de vacunación IMSS.
+Proyecto con fines educativos / mockup, **no es un sistema oficial del IMSS**.
+
+## ¿Qué hace?
+
+- Registrar vacunación de pacientes
+- Consultar historial de vacunas por paciente
+- Mostrar alertas de vacunas pendientes / próximas
+- Flujo de registro y consulta para personal de salud
+
+## Estructura del repo
+
+IMSS_vacunas_mockup/
+├── assets/              # Logos, iconos e imágenes
+├── design/              # Mockups en PNG (landing, registro, historial, alertas)
+├── diagrams/            # Diagramas HTML del sistema
+│   ├── 00_indice.html
+│   ├── 01_flujo_registro.html
+│   ├── 02_flujo_consulta.html
+│   ├── 03_secuencia_registro.html
+│   ├── 04_secuencia_alertas.html
+│   ├── 05_arquitectura_integracion.html
+│   ├── 06_modelo_entidades.html
+│   ├── 07_logica_alertas.html
+│   └── 08_roles_y_permisos.html
+├── imss-app/            # App móvil en React Native + Expo
+│   ├── src/screens/
+│   ├── src/components/
+│   ├── src/data/
+│   └── src/navigation/
+└── Fase3_Rol1_MVP_y_Flujo.pdf
+
+## Cómo ver los diagramas
+
+Solo abre cualquier archivo de `diagrams/` en tu navegador.
+Empieza por `00_indice.html`.
+
+## Cómo correr la app
+
+```bash
+cd imss-app
+npm install
+npx expo start
